@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Study Platform</title>
+
+</head>
+<body>
+
+    <!-- Login/Register page -->
+    <div id="auth-screen">
+        <div class="auth-card" id="login-box">
+            <h2>LOGIN</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button class="auth-button" onclick="enterApp()">Login</button>
+            <div class="auth-switch" onclick="toggleAuth(true)">Don't have an account? <b>Register</b></div>
+        </div>
+        <div class="auth-card" id="reg-box" style="display:none;">
+            <h2>CREATE ACCOUNT</h2>
+            <input type="text" id="reg-username" placeholder="Username">
+            <input type="email" id="reg-email" placeholder="Email Address">
+            <input type="password" id="reg-password" placeholder="Password">
+            <button class="auth-button" onclick="handleRegister()">Sign Up</button>
+            <div class="auth-switch" onclick="toggleAuth(false)">Back to <b>Login</b></div>
+        </div>
+    </div>
+
+    <!-- Main app -->
+    <div id="app">
+        <nav>
+            <div class="nav-item active" onclick="switchTab('study', this)"><b>TASK</b></div>
+            <div class="nav-item" onclick="switchTab('social', this)"><b>COMMUNITY</b></div>
+            <div class="nav-item" onclick="switchTab('health', this)"><b>HEALTH</b></div>
+            <div class="nav-item" onclick="logout()" style="margin-top:auto;"><b>LOGOUT</b></div>
+        </nav>
+
+        <main>
+            <!-- Study tasks page -->
+            <div id="study" class="view active">
+                <div class="header">
+                    <h1 id="hello-text"></h1>
+                    <p>Let's start smart study!</p>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="taskTitle" placeholder="Task Title">
+                    <select id="taskType">
+                        <option>Exam</option>
+                        <option>Assignment</option>
+                        <option>Quiz</option>
+                    </select>
+                    <input type="number" id="taskHours" placeholder="Hours" min="0.5" step="0.5" value="1" style="width:70px;">
+                    <input type="date" id="taskDate">
+                    <button class="add-button" onclick="addTask()">ADD TASK</button>
+                </div>
+                <div class="task-grid" id="planGrid"></div>
+            </div>
+
+            <!-- Community page -->
+            <div id="social" class="view">
+                <div class="header">
+                    <h1>Social Square</h1>
+                    <p>Communicate with your classmates!</p>
+                </div>
+                <div class="community-container">
+                    <input type="text" id="postInput" placeholder="Share your thoughts...">
+                    <button class="post-button" onclick="addPost()">POST</button>
+                </div>
+                <div id="postList">
+                    <div class="post-container">
+                        <span class="user-name">@Students_99:</span>
+                        <span class="post-content">Just optimized my 3-phase workflow for Calculus. Feeling sharp!</span>
+                        <div class="interact-zone">
+                            <span>Like (24)</span>
+                            <span>Comment (5)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health page -->
+            <div id="health" class="view">
+                <div class="header">
+                    <h1>Wellness Center</h1>
+                    <p>Share health tips and resources!</p>
+                </div>
+                <div class="community-container">
+                    <input type="text" id="healthInput" placeholder="Share health tips or resources...">
+                    <button class="post-button" onclick="addHealthPost()">POST</button>
+                </div>
+                <div id="healthPostList">
+                    <div class="post-container">
+                        <span class="user-name">@WellnessBot:</span>
+                        <span class="post-content">Remember to take breaks and stay hydrated during study sessions!</span>
+                        <div class="interact-zone">
+                            <span>Like (12)</span>
+                            <span>Comment (3)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right sidebar -->
+        <aside>
+            <div class="summary-widget">
+                <div class="widget-title">TIMELINE TRACKER</div>
+                <div class="date-flex">
+                    <div class="date-box">
+                        <label>CURRENT</label>
+                        <div class="val" id="todayVal">--/--</div>
+                    </div>
+                    <div style="opacity:0.2; font-size:30px;">→</div>
+                    <div class="date-box deadline-highlight">
+                        <label>DEADLINE</label>
+                        <div class="val" id="deadlineVal">--/--</div>
+                    </div>
+                </div>
+                <div id="activeTaskTitle" class="active-mission"></div>
+            </div>
+
+            <div class="plan-title">Phase plan</div>
+            <div id="phaseContent">
+                <div class="phase-block">
+                    <h5>PHASE 1: Basic Knowledge Consolidation</h5>
+                    <span class="date-span" id="phase1-dates">Loading...</span>
+                    <p>Sort out knowledge points and build a complete framework.</p>
+                </div>
+                <div class="phase-block">
+                    <h5>PHASE 2: Key & Difficult Point</h5>
+                    <span class="date-span" id="phase2-dates">Loading...</span>
+                    <p>Focus on high-frequency questions, practice intensively and fix knowledge gaps timely.</p>
+                </div>
+                <div class="phase-block">
+                    <h5>PHASE 3: Final Simulation</h5>
+                    <span class="date-span" id="phase3-dates">Loading...</span>
+                    <p>Take timed mock tests, summarize skills for final submission.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+  </body>
+  </html>
