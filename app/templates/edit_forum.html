@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">✏️ {{ title }}</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        {% for field in form %}
+                            {% if field.type != 'CSRFTokenField' and field.type != 'SubmitField' %}
+                                <div class="mb-3">
+                                    {{ field.label(class="form-label fw-bold") }}
+                                    
+                                    {% if field.type == 'TextAreaField' %}
+                                        {{ field(class="form-control", rows="6") }}
+                                    {% else %}
+                                        {{ field(class="form-control") }}
+                                    {% endif %}
+                                    
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <hr class="my-4">
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-light me-md-2" onclick="history.back()">Cancel</button>
+                            <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0 p-4">
+        <form method="POST" action="{{ url_for('create_plan') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.title.label(class="form-label fw-bold") }}
+                {{ form.title(class="form-control", placeholder="Please input your goal...") }}
+                {% for error in form.title.errors %}
+                    <span class="text-danger small">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="mb-4">
+                {{ form.deadline.label(class="form-label fw-bold") }}
+                {{ form.deadline(class="form-control", type="date") }}
+            </div>
+
+            <hr class="mb-4">
+            <h5 class="mb-3">Plan Tasks</h5>
+            
+            <div id="task-list">
+                <div class="d-flex mb-2 task-row">
+                    <input type="text" name="task_titles[]" class="form-control me-2" placeholder="Task Name" required>
+                    
+                    <select name="task_types[]" class="form-select me-2" style="width: 160px;">
+                        {% for tt in task_types %}
+                            <option value="{{ tt.id }}">{{ tt.emoji }} {{ tt.title }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <input type="number" step="0.5" name="task_hours[]" class="form-control me-2" placeholder="Est. Hours" style="width: 120px;" required>
+                    
+                    <button type="button" class="btn btn-outline-danger" onclick="removeTask(this)">
+                        X
+                    </button>
+                </div>
+            </div>
+            
+            <button type="button" class="btn btn-outline-secondary btn-sm mb-4 mt-2" onclick="addTask()">
+                + Add Another Task
+            </button>
+            
+            {{ form.submit(class="btn btn-primary w-100 btn-lg") }}
+        </form>
+    </div>
+</div>
+
+<script>
+
+function addTask() {
+    const taskList = document.getElementById('task-list');
+    
+  
+    const typeOptions = `
+        {% for tt in task_types %}
+            <option value="{{ tt.id }}" style="background-color: {{ tt.color }}; color: #fff;">{{ tt.emoji }} {{ tt.title }}</option>
+        {% endfor %}
+    `;
+
+    
+    const newTaskHtml = `
+        <div class="d-flex mb-2 task-row">
+            <input type="text" name="task_titles[]" class="form-control me-2" placeholder="New Task Name" required>
+            <select name="task_types[]" class="form-select me-2" style="width: 160px;">
+                ${typeOptions}
+            </select>
+            <input type="number" step="0.5" name="task_hours[]" class="form-control me-2" placeholder="Est. Hours" style="width: 120px;" required>
+            <button type="button" class="btn btn-outline-danger" onclick="removeTask(this)">X</button>
+        </div>
+    `;
+    
+    taskList.insertAdjacentHTML('beforeend', newTaskHtml);
+}
+
+// 
+function removeTask(buttonElement) {
+    const taskList = document.getElementById('task-list');
+    
+    const rows = taskList.getElementsByClassName('task-row');
+    
+   
+    if (rows.length > 1) {
+        
+        buttonElement.parentElement.remove();
+    } else {
+        alert("You must keep at least one task for your plan!");
+    }
+}
+</script>
+
+{% endblock %}

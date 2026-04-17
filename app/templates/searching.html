@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Filter Study Tasks</h1>
+    <p>Select a category below to filter your workload.</p>
+
+    <form method="GET">
+        <label for="task_type"><strong>Task Type:</strong></label>
+        <select name="task_type" id="task_type" onchange="this.form.submit()">
+            <option value="" selected="selected">All Tasks</option>
+            <option value="Assignment" {% if task_type == "Assignment" %}selected{% endif %}>Assignment</option>
+            <option value="Revision" {% if task_type == "Revision" %}selected{% endif %}>Revision</option>
+            <option value="Exam" {% if task_type == "Exam" %}selected{% endif %}>Exam</option>
+            <option value="Other" {% if task_type == "Other" %}selected{% endif %}>Other</option>
+        </select>
+    </form>
+
+    <hr>
+
+    {% if results %}
+        <table border="1" cellpadding="8" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Task Name</th>
+                    <th>Task Type</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td>{{ result.title }}</td>
+                    <td>{{ result.task_type }}</td>
+                    <td>{{ result.deadline }}</td>
+                    <td>{{ "Completed" if result.is_completed else "Pending" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color: gray;">No tasks found for this category.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('index') }}">Return to Home</a>
+
+{% endblock %}

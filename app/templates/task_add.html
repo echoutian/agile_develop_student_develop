@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">✨ Add New Task Type</h4>
+                    <small>A random cute emoji and macaron color will be assigned!</small>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('tasktype') }}">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-4">
+                            {{ form.title.label(class="form-label fw-bold") }}
+                            {{ form.title(class="form-control form-control-lg", placeholder="e.g., Coding, Reading, Workout...") }}
+                            
+                            {% for error in form.title.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('index') }}" class="btn btn-light me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5">Save Type</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4 mb-5">
+
+    {% if quote %}
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8 text-center">
+            <figure class="bg-light p-4 rounded-3 shadow-sm border-start border-5 border-primary">
+                <blockquote class="blockquote mb-3">
+                    <p class="fst-italic text-secondary">"{{ quote }}"</p>
+                </blockquote>
+                <figcaption class="blockquote-footer mb-0 fs-6">
+                    {{ author }}
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if plan %}
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <div>
+                    <h3 class="mb-1 text-primary fw-bold">{{ plan.title }}</h3>
+                    <div class="text-danger small fw-semibold">
+                        <i class="bi bi-clock"></i> The deadline：{{ plan.deadline.strftime('%Y-%m-%d') }}
+                    </div>
+                </div>
+                
+                <form action="{{ url_for('delete_plan', plan_id=plan.id) }}" method="POST" onsubmit="return confirm('警告：确定要彻底删除整个计划吗？');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete the plan</button>
+                </form>
+            </div>
+
+            <ul class="list-group list-group-flush">
+                {% for task in plan.tasks %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div class="d-flex align-items-center">
+                            <form action="{{ url_for('toggle_task', task_id=task.id) }}" method="POST" class="m-0 p-0 me-3">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="checkbox" name="status" value="finished" 
+                                       class="form-check-input mt-0" 
+                                       style="width: 24px; height: 24px; cursor: pointer;"
+                                       onchange="this.form.submit()" 
+                                       {% if task.is_completed %}checked{% endif %}>
+                            </form>
+
+                            <span class="fs-5 fw-medium {% if task.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                                {{ task.title }}
+                            </span>
+
+                            {% if task.task_type %}
+                                <span class="badge rounded-pill ms-3" style="background-color: {{ task.task_type.color }}; color: #fff;">
+                                    {{ task.task_type.emoji }} {{ task.task_type.title }}
+                                </span>
+                            {% endif %}
+                            
+                            <small class="text-muted ms-3">⏱️ {{ task.estimated_hours }}h</small>
+                        </div>
+
+                        <div class="btn-group">
+                            <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-sm btn-light text-secondary">Edit</a>
+                            <form action="{{ url_for('delete_task', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-light text-danger">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %} <li class="list-group-item bg-light py-4">
+                    <form action="{{ url_for('add_task_quick', plan_id=plan.id) }}" method="POST" class="row g-2 align-items-center">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="col-sm-5">
+                            <input type="text" name="title" class="form-control" placeholder="+ Add a new task quickly..." required>
+                        </div>
+                        
+                        <div class="col-sm-3">
+                            <select name="task_type_id" class="form-select" required>
+                                <option value="" disabled selected>Choose type</option>
+                                {% for tt in task_types %}
+                                    <option value="{{ tt.id }}">{{ tt.emoji }} {{ tt.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-sm-2">
+                            <input type="number" step="0.5" name="hours" class="form-control" placeholder="Hours" required>
+                        </div>
+                        
+                        <div class="col-sm-2">
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">ADD!</button>
+                        </div>
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+    {% else %}
+        <div class="text-center py-5 mt-5">
+            <div class="display-1 mb-4">🍻</div>
+            <h2 class="text-success fw-bold">You have done all the Plans!!!</h2>
+            <p class="lead text-muted mt-3 mb-5">
+                Great job! You've finished all your work. Enjoy your free time!
+            </p>
+            <a href="{{ url_for('create_plan') }}" class="btn btn-primary btn-lg shadow-sm px-5 rounded-pill">
+                Start a New Plan
+            </a>
+        </div>
+    {% endif %}
+
+    <div class="mt-5 border-top pt-4">
+        <nav class="d-flex gap-4 justify-content-center">
+            <a href="{{url_for('display_plan', status='arch')}}" class="text-decoration-none">🍒 Archived Plans</a>
+            <a href="{{url_for('display_plan', status='unarch')}}" class="text-decoration-none">🍑 Unarchived Plans</a>
+            <a href="{{url_for('display_plan', status='all')}}" class="text-decoration-none">🪻 All Plans</a>
+        </nav>
+    </div>
+
+</div>
+
+{% endblock %}
