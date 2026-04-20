@@ -152,8 +152,13 @@ def delete_task(task_id):
 
     if len(plan.tasks) <= 1:
         flash('You need to keep at least one task in a plan!')
+<<<<<<< HEAD
         return redirect(url_for('index', planid=plan.id))
 
+=======
+        return redirect (url_for('index',planid=plan.id))
+        
+>>>>>>> aa5b06e (fix a bug that will happen when a task being deleted)
     db.session.delete(task)
     db.session.commit()
 
@@ -165,8 +170,13 @@ def delete_task(task_id):
         return redirect(url_for('index'))
     else:
         flash('Ths task has been removed!🔫')
+<<<<<<< HEAD
         return redirect(url_for('index', planid=plan.id))
 
+=======
+        return redirect(url_for('index',planid=plan.id))
+    
+>>>>>>> aa5b06e (fix a bug that will happen when a task being deleted)
 
 @app.route('/plan/<int:plan_id>/delete', methods=['POST'])
 @login_required
