@@ -61,52 +61,40 @@ def register():
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    plan_id=request.args.get('planid')
+    plan_id = request.args.get('planid')
 
     if plan_id:
-        stmt=(sa.select(StudyPlan).options(
-        so.joinedload(StudyPlan.tasks).joinedload(StudyTask.task_type)
-    ).where(StudyPlan.id == int(plan_id)).where(StudyPlan.student_id == current_user.id))
+        stmt = (sa.select(StudyPlan).options(
+            so.joinedload(StudyPlan.tasks).joinedload(StudyTask.task_type)
+        ).where(StudyPlan.id == int(plan_id)).where(StudyPlan.student_id == current_user.id))
         plan = db.session.scalars(stmt).unique().first()
         if plan is None:
             abort(404)
-        
-        
-        
-        
-
     else:
         stmt = (
-        sa.select(StudyPlan)
-        .options(so.joinedload(StudyPlan.tasks).joinedload(StudyTask.task_type))
-        .where(StudyPlan.student_id == current_user.id)
-        .where(StudyPlan.is_archived == False)
-        .order_by(StudyPlan.deadline.asc())
-        .limit(1)
-    )
+            sa.select(StudyPlan)
+            .options(so.joinedload(StudyPlan.tasks).joinedload(StudyTask.task_type))
+            .where(StudyPlan.student_id == current_user.id)
+            .where(StudyPlan.is_archived == False)
+            .order_by(StudyPlan.deadline.asc())
+            .limit(1)
+        )
         plan = db.session.scalars(stmt).first()
-    
 
+    task_types = db.session.scalars(sa.select(TaskType)).all()
 
-    
-    task_types=db.session.scalars(sa.select(TaskType)).all()
-
-
-  
     quote = "Never forgive to be extraordinary"
-    author='Sifan'
+    author = 'Sifan'
     try:
         response = requests.get("https://zenquotes.io/api/random", timeout=3)
         if response.status_code == 200:
             data = response.json()
-            quote = data[0]['q']  
-            author = data[0]['a'] 
+            quote = data[0]['q']
+            author = data[0]['a']
     except Exception as e:
-        
         pass
-    
-    return render_template('index.html', plan=plan, task_types=task_types,quote=quote,author=author)
 
+    return render_template('index.html', plan=plan, task_types=task_types, quote=quote, author=author)
 
 @app.route('/plan/create', methods=['GET', 'POST'])
 @login_required
@@ -158,23 +146,27 @@ def delete_task(task_id):
     plan = task.plan
     
    
+    if plan is None:
+        abort(404)
+
+
     if len(plan.tasks) <= 1:
         flash('You need to keep at least one task in a plan!')
-        return redirect(url_for('index'),planid=plan.id)
-        
+        return redirect(url_for('index', planid=plan.id))
+
     db.session.delete(task)
     db.session.commit()
-    
+
 
     if all(t.is_completed for t in plan.tasks):
         plan.is_archived = True
         db.session.commit()
-        flash(f'The unfinished tasks in {plan.title} have all been removed and this {plan.title} is archived !🫜')
+        flash(f'🎉 {plan.title} has all been done! Let\'s move to the next one!!')
         return redirect(url_for('index'))
     else:
         flash('Ths task has been removed!🔫')
-        return redirect(url_for('index'),planid=plan.id)
-    
+        return redirect(url_for('index', planid=plan.id))
+
 
 @app.route('/plan/<int:plan_id>/delete', methods=['POST'])
 @login_required
@@ -200,15 +192,25 @@ def toggle_task(task_id):
 
     
     plan = task.plan
+    archived = False
     if all(t.is_completed for t in plan.tasks):
         plan.is_archived = True
         db.session.commit()
+        archived = True
+
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+
+        return jsonify({'success': True, 'archived': archived, 'planid': plan.id})
+
+
+    if archived:
         flash(f'🎉 {plan.title} has all been done! Let\'s move to the next one!!')
-        
-        
         return redirect(url_for('index'))
     else:
-        
+        ref = request.referrer
+        if ref:
+            return redirect(ref)
         return redirect(url_for('index', planid=plan.id))
  
  
@@ -547,15 +549,3 @@ def delete_health(healthid):
 
     return redirect(url_for('health'))
    
-    
-
-
-
-
-
-    
-
-
-
-
-

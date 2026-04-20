@@ -34,14 +34,14 @@
                     
                     <input type="number" step="0.5" name="task_hours[]" class="form-control me-2" placeholder="Est. Hours" style="width: 120px;" required>
                     
-                    <button type="button" class="btn btn-outline-danger" onclick="removeTask(this)">
+                    <button type="button" class="btn btn-outline-danger" onclick="removeTask(this)" style="color: #000 !important;">
                         X
                     </button>
                 </div>
             </div>
             
-            <button type="button" class="btn btn-outline-secondary btn-sm mb-4 mt-2" onclick="addTask()">
-                + Add Another Task
+            <button type="button" class="btn btn-outline-secondary btn-sm mb-4 mt-2 fw-bold text-dark" onclick="addTask()">
+                + add another task
             </button>
             
             {{ form.submit(class="btn btn-primary w-100 btn-lg") }}
@@ -69,14 +69,13 @@ function addTask() {
                 ${typeOptions}
             </select>
             <input type="number" step="0.5" name="task_hours[]" class="form-control me-2" placeholder="Est. Hours" style="width: 120px;" required>
-            <button type="button" class="btn btn-outline-danger" onclick="removeTask(this)">X</button>
+            <button type="button" class="btn btn-outline-danger" onclick="removeTask(this)" style="color: #000 !important;">X</button>
         </div>
     `;
     
     taskList.insertAdjacentHTML('beforeend', newTaskHtml);
 }
 
-// 
 function removeTask(buttonElement) {
     const taskList = document.getElementById('task-list');
     

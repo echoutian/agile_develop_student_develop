@@ -3,12 +3,12 @@ const API_BASE = '/api';
 
 let authToken = localStorage.getItem('auth_token') || null;
 
-// Store all task data
+// Store all tasks
 let tasks = [];
 let currentPlanId = null;
 let currentUser = null;
 
-// Toggle login and register forms
+
 function toggleAuth(isReg) {
     document.getElementById('login-box').style.display = isReg ? 'none' : 'block';
     document.getElementById('reg-box').style.display = isReg ? 'block' : 'none';
@@ -244,7 +244,7 @@ function renderTasks() {
 
     grid.innerHTML = html;
 
-    // If there are tasks, display study plan for the first task by default
+
     if (tasks.length > 0) {
         generateStudyPlan(tasks[0].id);
     }
@@ -597,20 +597,20 @@ async function deleteHealthResource(id) {
 
 // Switch navigation tabs
 function switchTab(id, el) {
-    // Remove active style from all nav items
+
     var navItems = document.querySelectorAll('.nav-item');
     for (var i = 0; i < navItems.length; i++) {
         navItems[i].classList.remove('active');
     }
-    // Add active style to current nav item
+
     if (el) el.classList.add('active');
 
-    // Hide all views
+
     var views = document.querySelectorAll('.view');
     for (var j = 0; j < views.length; j++) {
         views[j].classList.remove('active');
     }
-    // Show target view
+
     document.getElementById(id).classList.add('active');
 }
 
@@ -740,7 +740,7 @@ function renderTasks() {
 
     grid.innerHTML = html;
 
-    // If there are tasks, display study plan for the first task by default
+
     if (tasks.length > 0) {
         generateStudyPlan(tasks[0].id);
     }
@@ -838,7 +838,7 @@ function generateStudyPlan(taskId) {
     var deadline = new Date(task.date);
     var now = new Date();
 
-    // Calculate days until deadline
+
     var daysToDeadline = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
 
     if (daysToDeadline <= 0) {
@@ -846,7 +846,7 @@ function generateStudyPlan(taskId) {
         return;
     }
 
-    // Date formatting function
+
     function formatDate(d) {
         var m = d.getMonth() + 1;
         var day = d.getDate();
@@ -855,21 +855,21 @@ function generateStudyPlan(taskId) {
         return m + "/" + day;
     }
 
-    // Phase 1: First 30% of time
+
     var phase1End = new Date(now);
     phase1End.setDate(now.getDate() + Math.floor(daysToDeadline * 0.3));
 
-    // Phase 2: Next 40% of time
+
     var phase2Start = new Date(phase1End);
     phase2Start.setDate(phase1End.getDate() + 1);
     var phase2End = new Date(phase1End);
     phase2End.setDate(phase1End.getDate() + Math.floor(daysToDeadline * 0.4));
 
-    // Phase 3: Final 30% of time
+
     var phase3Start = new Date(phase2End);
     phase3Start.setDate(phase2End.getDate() + 1);
 
-    // Update date display on page
+
     document.getElementById('phase1-dates').innerText = formatDate(now) + " — " + formatDate(phase1End);
     document.getElementById('phase2-dates').innerText = formatDate(phase2Start) + " — " + formatDate(phase2End);
     document.getElementById('phase3-dates').innerText = formatDate(phase3Start) + " — " + formatDate(deadline);
