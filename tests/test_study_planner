@@ -1,0 +1,275 @@
+import pytest
+import sqlalchemy as sa
+from pytest_bdd import given, when, then, scenario
+
+from app import db
+from app.models import StudyPlan, StudyTask, Post, HealthResource, TaskType
+
+
+@scenario("study_planner.feature", "S1.1 Add Study Task")
+def test_s11(): pass
+
+
+@scenario("study_planner.feature", "S1.2 View Study Plan")
+def test_s12(): pass
+
+
+@scenario("study_planner.feature", "S1.3 Edit/Delete Task")
+def test_s13(): pass
+
+
+@scenario("study_planner.feature", "S2.1 Create Forum Post")
+def test_s21(): pass
+
+
+@scenario("study_planner.feature", "S2.2 View Recent Posts")
+def test_s22(): pass
+
+
+@scenario("study_planner.feature", "S2.3 Access Support Page")
+def test_s23(): pass
+
+
+@scenario("study_planner.feature", "S2.4 Admin Resource Management")
+def test_s24(): pass
+
+
+
+@given("I am logged in as a student")
+def login_as_student(client, student_user, app):
+    with app.app_context():
+        user = db.session.merge(student_user)
+        with client.session_transaction() as sess:
+            sess["_user_id"] = str(user.id)
+
+
+@given("I am logged in as admin")
+def login_as_admin(client, admin_user, app):
+    with app.app_context():
+        user = db.session.merge(admin_user)
+        with client.session_transaction() as sess:
+            sess["_user_id"] = str(user.id)
+
+
+# ==========================================
+# S1.1 Add Study Task
+# ==========================================
+@given("I enter task name, type, and deadline", target_fixture="task_form_data")
+def enter_task_details(app):
+    with app.app_context():
+
+        task_type = db.session.scalar(sa.select(TaskType))
+        if not task_type:
+            task_type = TaskType(title="Study", emoji="📚", color="#FFFFFF")
+            db.session.add(task_type)
+            db.session.commit()
+        tt_id = str(task_type.id)
+
+
+    return {
+        "title": "Test Plan",
+        "deadline": "2026-05-01",
+        "task_titles[]": ["Math"],
+        "task_hours[]": ["3.0"],
+        "task_types[]": [tt_id]
+    }
+
+
+@when("I save the task")
+def save_task(client, task_form_data):
+    client.post("/plan/create", data=task_form_data, follow_redirects=True)
+
+
+@then("it appears in my task list")
+def task_appears(app, student_user):
+    with app.app_context():
+        user = db.session.merge(student_user)
+        plan = db.session.scalar(sa.select(StudyPlan).where(StudyPlan.student_id == user.id))
+        assert plan is not None
+        assert plan.title == "Test Plan"
+        assert len(plan.tasks) > 0
+        assert plan.tasks[0].title == "Math"
+
+
+# ==========================================
+# S1.2 View Study Plan
+# ==========================================
+@given("a plan is generated")
+def plan_generated(client, app):
+
+    with app.app_context():
+        task_type = db.session.scalar(sa.select(TaskType))
+        if not task_type:
+            task_type = TaskType(title="Study", emoji="📚", color="#FFFFFF")
+            db.session.add(task_type)
+            db.session.commit()
+        tt_id = str(task_type.id)
+
+    client.post("/plan/create", data={
+        "title": "Test Plan",
+        "deadline": "2026-05-01",
+        "task_titles[]": ["Math"],
+        "task_hours[]": ["3.0"],
+        "task_types[]": [tt_id]
+    }, follow_redirects=True)
+
+
+@when("I open the plan page")
+def open_plan_page(client):
+    assert client.get("/", follow_redirects=True).status_code == 200
+
+
+@then("I see daily tasks in order")
+def see_tasks_in_order(app, student_user):
+    with app.app_context():
+        user = db.session.merge(student_user)
+        tasks = db.session.scalars(sa.select(StudyTask).join(StudyPlan).where(StudyPlan.student_id == user.id)).all()
+        assert len(tasks) > 0
+        assert tasks[0].title == "Math"
+
+
+# ==========================================
+# S1.3 Edit/Delete Task
+# ==========================================
+@given("task exists")
+def task_exists(client, app):
+
+    with app.app_context():
+        task_type = db.session.scalar(sa.select(TaskType))
+        if not task_type:
+            task_type = TaskType(title="Study", emoji="📚", color="#FFFFFF")
+            db.session.add(task_type)
+            db.session.commit()
+        tt_id = str(task_type.id)
+
+    client.post("/plan/create", data={
+        "title": "Test Plan",
+        "deadline": "2026-05-01",
+        "task_titles[]": ["Math"],
+        "task_hours[]": ["3.0"],
+        "task_types[]": [tt_id]
+    }, follow_redirects=True)
+
+
+@when("I edit or delete the task")
+def edit_or_delete_task(client, app, student_user):
+    with app.app_context():
+        user = db.session.merge(student_user)
+        task = db.session.scalar(sa.select(StudyTask).join(StudyPlan).where(StudyPlan.student_id == user.id))
+        task_id = task.id
+        task_type = db.session.scalar(sa.select(TaskType))
+        tt_id = task_type.id if task_type else 1
+
+
+    response = client.post(f"/task/{task_id}/edit", data={
+        "title": "Updated",
+        "estimated_hours": "4.0",
+        "task_type": str(tt_id)
+    }, follow_redirects=True)
+    assert response.status_code == 200
+
+
+@then("my task list stays accurate")
+def task_list_accurate(app, student_user):
+    with app.app_context():
+        db.session.expire_all()
+        user = db.session.merge(student_user)
+        task = db.session.scalar(sa.select(StudyTask).join(StudyPlan).where(StudyPlan.student_id == user.id))
+        assert task is not None
+        assert task.title == "Updated"
+        assert task.estimated_hours == 4.0
+
+
+# ==========================================
+# S2.1 Create Forum Post
+# ==========================================
+@given("I enter a title and content", target_fixture="post_data")
+def enter_post_details():
+    return {"title": "Test", "body": "Content"}
+
+
+@when('I click “Post”')
+def click_post(client, post_data):
+    client.post("/forum", data=post_data, follow_redirects=True)
+
+
+@then("my post appears in the recent posts list")
+def post_appears(app):
+    with app.app_context():
+        assert db.session.scalar(sa.select(sa.func.count(Post.id))) > 0
+        post = db.session.scalar(sa.select(Post).where(Post.title == "Test"))
+        assert post is not None
+
+
+# ==========================================
+# S2.2 View Recent Posts
+# ==========================================
+@given("posts exist")
+def posts_exist(client):
+    client.post("/forum", data={"title": "Existing", "body": "Body"}, follow_redirects=True)
+
+
+@when("I visit the forum page")
+def visit_forum(client):
+    assert client.get("/forum").status_code == 200
+
+
+@then("I see posts with author, timestamp, and preview")
+def see_posts_with_metadata(client):
+    response = client.get("/forum")
+    assert b"Existing" in response.data
+    assert b"Body" in response.data
+
+
+# ==========================================
+# S2.3 Access Support Page
+# ==========================================
+@given("I navigate to the health page")
+def navigate_health(client):
+    assert client.get("/health").status_code == 200
+
+
+@when("resources are available")
+def resources_available(app, admin_user):
+    with app.app_context():
+        admin = db.session.merge(admin_user)
+        db.session.add(HealthResource(title="Tips", content="Stress Management", category="stress", admin_id=admin.id))
+        db.session.commit()
+
+
+@then("I see curated support links/information")
+def see_resources(client):
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert b"Tips" in response.data
+    assert b"Stress Management" in response.data
+
+
+# ==========================================
+# S2.4 Admin Resource Management
+# ==========================================
+@given("I edit resources", target_fixture="health_form_data")
+def edit_resources(app, admin_user):
+    with app.app_context():
+        admin = db.session.merge(admin_user)
+        res = HealthResource(title="Old", content="...", category="old", admin_id=admin.id)
+        db.session.add(res)
+        db.session.commit()
+
+    return {
+        "title": "New",
+        "content": "Content",
+        "category": "wellbeing"
+    }
+
+
+@when("I save the changes")
+def save_changes(client, health_form_data):
+    client.post("/health/create", data=health_form_data, follow_redirects=True)
+
+
+@then("changes are reflected on the student-facing page")
+def changes_reflected(client):
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert b"New" in response.data
